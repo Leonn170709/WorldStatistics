@@ -1,0 +1,11 @@
+# Command Messages
+commands:
+  no-permission: "&#FF0000You don't have permission to use this command!"
+
+# Server Stats
+stats:
+  display:
+    - "&7&m                                                       &r"
+    - "&#FFDD00The total world size is %world_size%"
+    - "&#FFDD00%total_players% players joined the server so far."
+    - "&7&m                                                       &r"

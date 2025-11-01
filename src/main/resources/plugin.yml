@@ -1,0 +1,20 @@
+name: WorldStatistics
+version: '1.0'
+main: net.dungeon.worldStatistics.WorldStatistics
+api-version: '1.21'
+load: STARTUP
+authors: [ DungeonHD ]
+folia-supported: true
+description: A simple command that shows the world size
+website: https://www.dungeonhd.net
+commands:
+  worldstats:
+    description: Shows world statistics
+    usage: /worldstats
+    permission: worldstats.use
+    aliases: [stats]
+
+permissions:
+  worldstats.use:
+    description: Allows viewing the world statistics
+    default: op
