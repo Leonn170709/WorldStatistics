@@ -12,6 +12,7 @@ public final class WorldStatistics extends JavaPlugin {
     public void onEnable() {
         messageManager = new MessageManager(this);
         getCommand("worldstats").setExecutor(new StatsCommand(this));
+        System.out.println("World stats loaded");
     }
 
     public MessageManager getMessageManager() {

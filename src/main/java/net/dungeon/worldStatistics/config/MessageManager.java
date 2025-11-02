@@ -24,7 +24,7 @@ public class MessageManager {
         loadMessages();
     }
 
-    private void loadMessages() {
+    public void loadMessages() {
         messagesFile = new File(plugin.getDataFolder(), "messages.yml");
 
         if (!messagesFile.exists()) {

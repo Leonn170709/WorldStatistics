@@ -9,7 +9,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class StatsCommand implements CommandExecutor {
@@ -20,14 +22,24 @@ public class StatsCommand implements CommandExecutor {
         this.plugin = plugin;
     }
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    @Override public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!sender.hasPermission("worldstats.use")) {
             plugin.getMessageManager().sendMessage(sender, "commands.no-permission");
             return true;
         }
 
         // Stats async berechnen um Lag zu vermeiden
+        if (args.length > 0 && args[0].equalsIgnoreCase("reload")) {
+            plugin.getMessageManager().loadMessages();
+            sender.sendMessage("§a✔ Messages reloaded successfully!");
+            return true;
+        }
+        //if (args.length == 1){
+          //  List<String> arguments = new ArrayList<>();
+            //arguments.add("reload");                      Tab completion code habs nicht hinbekommen :(
+            //return true;
+        //}
+
         if (plugin.isFolia()) {
             Bukkit.getAsyncScheduler().runNow(plugin, task -> calculateAndSendStats(sender));
         } else {
@@ -49,7 +61,6 @@ public class StatsCommand implements CommandExecutor {
 
         String formattedSize = formatBytes(totalBytes);
 
-        // Spielerdaten aus playerdata Ordner
         File playerDataFolder = new File(Bukkit.getWorlds().get(0).getWorldFolder().getParentFile(),
                 Bukkit.getWorlds().get(0).getName() + "/playerdata");
         int totalPlayers = 0;
@@ -60,16 +71,33 @@ public class StatsCommand implements CommandExecutor {
                 totalPlayers = playerFiles.length;
             }
         }
+        File worldFolder = Bukkit.getWorlds().get(0).getWorldFolder();
+        String baseName = worldFolder.getName();
+        File parentFolder = worldFolder.getParentFile();
+
+        // Region-Ordner
+        File regionOverworld = new File(parentFolder, baseName + "/region");
+        File regionNether = new File(parentFolder, baseName + "_nether/region");
+        File regionEnd = new File(parentFolder, baseName + "_the_end/region");
+
+        // Regionen zählen
+        int overworldRegions = countRegionFiles(regionOverworld);
+        int netherRegions = countRegionFiles(regionNether);
+        int endRegions = countRegionFiles(regionEnd);
+
+        int totalRegions = overworldRegions + netherRegions + endRegions;
+        long totalRegionValue = totalRegions * 1024L;
 
         Map<String, String> placeholders = new HashMap<>();
         placeholders.put("world_size", formattedSize);
         placeholders.put("world_size_bytes", String.valueOf(totalBytes));
         placeholders.put("world_count", String.valueOf(worldCount));
         placeholders.put("total_players", String.valueOf(totalPlayers));
+        placeholders.put("total_regions", String.valueOf(totalRegions));
+        placeholders.put("total_region_value", String.valueOf(totalRegionValue));
         placeholders.put("online_players", String.valueOf(Bukkit.getOnlinePlayers().size()));
 
         String finalMessage = buildStatsMessage(placeholders);
-
         // Zurück zum Main Thread
         if (plugin.isFolia() && sender instanceof Player) {
             Player player = (Player) sender;
@@ -91,6 +119,7 @@ public class StatsCommand implements CommandExecutor {
 
         return message.toString().trim();
     }
+
 
     private long getDirectorySize(File directory) {
         long size = 0;
@@ -123,4 +152,16 @@ public class StatsCommand implements CommandExecutor {
 
         return String.format("%.2f %s", value, units[exp]);
     }
+    private int countRegionFiles(File folder) {
+        if (folder.exists() && folder.isDirectory()) {
+            File[] files = folder.listFiles((dir, name) -> name.endsWith(".mca"));
+            if (files != null) {
+                return files.length;
+            }
+        }
+        return 0;
+
+    }
+
+
 }
